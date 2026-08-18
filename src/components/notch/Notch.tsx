@@ -40,7 +40,13 @@ export function Notch({ eyebrow, children, className }: Props) {
   }
 
   return (
-    <div className={[styles.notch, className].filter(Boolean).join(" ")}>
+    <div className={[styles.wrapper, className].filter(Boolean).join(" ")}>
+      <div className={styles.fill}>
+        <div className="px-6 pb-6 pt-16 md:px-8 md:pb-8 md:pt-20">{children}</div>
+      </div>
+      {/* Siblings of .fill, not children of it — .fill's clip-path would
+          otherwise cut the eyebrow entirely and halve the stroke's width
+          along the notch boundary. See Notch.module.css's header comment. */}
       <svg
         className={styles.stroke}
         viewBox="0 0 100 100"
@@ -51,14 +57,13 @@ export function Notch({ eyebrow, children, className }: Props) {
           d={STROKE_PATH}
           fill="none"
           stroke="var(--accent)"
-          strokeWidth={1.5}
+          strokeWidth={2}
           vectorEffect="non-scaling-stroke"
         />
       </svg>
       <span className={`${styles.eyebrow} font-mono text-eyebrow uppercase tracking-wide text-accent-text`}>
         {eyebrow}
       </span>
-      <div className="px-6 pb-6 pt-16 md:px-8 md:pb-8 md:pt-20">{children}</div>
     </div>
   );
 }

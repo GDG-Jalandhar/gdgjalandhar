@@ -8,11 +8,22 @@
  * viewBox="0 0 100 100" stay perfectly coordinate-locked at any card size —
  * a deliberate simplification flagged for a follow-up design pass against
  * real card widths if the proportions read wrong in review.
+ *
+ * .wrapper carries no clip-path of its own — .stroke and .eyebrow are its
+ * direct children, siblings of .fill, specifically so they're NOT subject to
+ * .fill's clip-path. They used to be children of the clipped element: the
+ * eyebrow sat exactly in the rectangle the clip-path excludes (so it was
+ * fully invisible), and the stroke's path runs along that same clip
+ * boundary, so half its width — the half bulging into the cut-away corner —
+ * was being clipped off too, leaving it looking like a hairline.
  */
-.notch {
+.wrapper {
   --notch-w: 26%;
   --notch-h: 15%;
   position: relative;
+}
+
+.fill {
   overflow: hidden;
   border-radius: var(--radius-card);
   background: var(--gdg-surface);
@@ -27,7 +38,7 @@
 }
 
 @media (min-width: 768px) {
-  .notch {
+  .fill {
     border-radius: var(--radius-card-lg);
   }
 }
