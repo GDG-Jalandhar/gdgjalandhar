@@ -1,0 +1,43 @@
+/* The hairline rail + accent dots + fixed time column: geometry Tailwind
+ * utilities can't express cleanly, per Design-Philosophy.md §13's boundary. */
+.rail {
+  position: relative;
+  padding-left: 5.75rem; /* clears the 76px time column */
+}
+.rail::before {
+  content: "";
+  position: absolute;
+  left: 4.75rem;
+  top: 0.5rem;
+  bottom: 0.5rem;
+  width: 1px;
+  background: var(--gdg-hairline);
+}
+
+.row {
+  position: relative;
+  padding-block: 0.75rem;
+}
+
+.time {
+  position: absolute;
+  left: -5.75rem;
+  width: 4.5rem;
+  text-align: right;
+}
+
+.dot {
+  /* .row's own box already starts 5.75rem in (the .rail padding that clears
+   * the time column), so this must be relative to *that*, not to .rail —
+   * -1rem lands it back at the rail's true left:4.75rem position. Landing it
+   * at a positive 4.75rem here put it 5.75rem too far right, inside the
+   * activity title text. */
+  position: absolute;
+  left: -1rem;
+  top: 1.25rem;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--accent);
+  transform: translateX(-3px);
+}

@@ -1,0 +1,45 @@
+/* Styles injected, sanitized HTML we don't author (the API's `description`)
+ * — utilities can't be applied to it, so it gets one scoped block per
+ * Design-Philosophy.md §8/§13. */
+.prose {
+  max-width: 68ch;
+  color: var(--gdg-text-muted);
+}
+.prose :global(p) {
+  margin-block: 1em;
+  line-height: 1.6;
+}
+.prose :global(h2) {
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+  color: var(--gdg-text);
+}
+.prose :global(h3) {
+  margin-top: 1.25em;
+  margin-bottom: 0.5em;
+  font-weight: 700;
+  color: var(--gdg-text);
+}
+.prose :global(ul),
+.prose :global(ol) {
+  margin-block: 1em;
+  padding-left: 1.5em;
+}
+.prose :global(li) {
+  margin-block: 0.25em;
+}
+.prose :global(blockquote) {
+  border-left: 2px solid var(--accent);
+  padding-left: 1em;
+  font-style: italic;
+}
+.prose :global(a) {
+  color: var(--accent-text);
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+.prose :global(code) {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}

@@ -1,0 +1,66 @@
+export type AgendaRow = {
+  time: string; // display string in event-local time, e.g. "1:40 PM" — never parsed, never sorted
+  activity: string;
+  description: string;
+  audienceType: "IN_PERSON" | "VIRTUAL" | "HYBRID";
+};
+
+export type AgendaDay = {
+  title: string;
+  rows: AgendaRow[];
+};
+
+export type Agenda = {
+  multiday: boolean;
+  days: AgendaDay[];
+};
+
+// The normalized shape every component works with — nothing raw from Bevy
+// escapes `normalize.ts` (PRD §6.6 D-12).
+export type GdgEvent = {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string;
+  descriptionHtml: string; // sanitized
+  startAt: Date;
+  endAt: Date | null;
+  timezone: string; // IANA, from event_timezone
+  tzAbbr: string;
+  status: "upcoming" | "past";
+  audience: "IN_PERSON" | "VIRTUAL" | "HYBRID";
+  venue: {
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+    zip: string;
+    showMap: boolean;
+  } | null;
+  virtualUrl: string | null;
+  registration: {
+    label: string;
+    required: boolean;
+    rsvpOnly: boolean;
+    guestAllowed: boolean;
+    url: string;
+  };
+  attendees: number | null;
+  tags: string[];
+  agenda: Agenda | null; // null when absent, hidden, empty, or unparseable
+  media: {
+    banner: string;
+    thumbnail: string;
+    isDefaultBanner: boolean;
+    videoUrl: string | null;
+    slidesUrl: string | null;
+  };
+  share: { enabled: boolean; url: string };
+  cohost: {
+    chapterId: number;
+    chapterTitle: string;
+    chapterUrl: string;
+    isOurs: boolean;
+  };
+  bevyUrl: string; // the canonical Bevy event page — D-13
+};

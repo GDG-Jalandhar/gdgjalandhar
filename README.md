@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GDG Jalandhar
 
-## Getting Started
+The website for the GDG Jalandhar developer community — a mobile-first Progressive Web App that shows who the chapter is, what's coming up, and one clear way to join. There's no CMS and no database: all event content is fetched live and rendered through React Server Components, with the site installable and readable offline as a PWA.
 
-First, run the development server:
+## Stack
+
+- **Next.js 16** (App Router) — React Server Components, streaming, and ISR for all data fetching
+- **TypeScript**, strict mode
+- **Tailwind CSS v4**, themed from brand design tokens, with a handful of CSS Modules for geometry (the notch container, the agenda rail) that utilities can't express
+- **Serwist** for the service worker — install prompt, offline fallback page, update-available flow
+- **Zod** for API response validation, **isomorphic-dompurify** for sanitizing organizer-authored HTML (server-side only)
+- **Vitest** + React Testing Library for unit tests, **Playwright** for e2e (smoke, accessibility, offline navigation)
+- **msw** to mock the dev environment so `next dev` never depends on a live network call
+
+## Getting started
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+pnpm install
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). The dev server runs against local fixtures (see `src/mocks/`) rather than the live network, so it works offline and produces consistent data for local development.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Commands
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+pnpm dev              # dev server, mocked data
+pnpm build             # production build
+pnpm start             # serve the production build
+pnpm lint               # eslint
+pnpm typecheck          # tsc --noEmit
+pnpm test                # unit tests (vitest)
+pnpm test:watch
+pnpm test:e2e            # e2e smoke + accessibility tests (playwright, against `pnpm dev`)
+pnpm test:e2e:offline    # offline-navigation e2e test (needs a production build)
+```
 
-## Learn More
+## Project structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+  app/            # routes (App Router) — pages, layouts, loading/error states, manifest, sw entry
+  components/     # cross-feature UI: the notch primitive, brand/logo, glyphs, layout shell, pwa, social, ui
+  features/       # route-specific composition (home, events, about)
+  lib/            # data normalization, formatting, fonts, SEO helpers
+  data/           # hand-authored chapter/team content not available from any API
+  mocks/          # msw handlers + fixtures used by `next dev` and the unit tests
+public/
+  brand/          # logo lockups used at runtime
+  icons/          # PWA install icons
+brand-kit/        # source design assets (full-size fonts, glyph library) — not served, kept for reference
+e2e/              # Playwright specs
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Routes: `/` (home), `/events` (upcoming/past listing), `/events/[slug]` (event detail), `/about`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Design system
 
-## Deploy on Vercel
+The visual language centers on a "notch" container as the structural primitive, per-route accent colors, and a Google Sans / Google Sans Mono type system.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## PWA
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The site installs on Android and iOS, precaches its app shell, and works offline for previously visited pages — including client-side navigation between them, not just a reload. An update toast appears when a new version is available. See `src/app/sw.ts` for how the caching strategy is put together.

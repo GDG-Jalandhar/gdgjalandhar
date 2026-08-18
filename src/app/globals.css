@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+/*
+ * GDG Jalandhar design tokens — Design-Philosophy.md §4.3 (color), §5.3 (type scale), §7 (spacing).
+ * Dark-first, single mode (§4.4) — there is no light-mode branch.
+ */
+:root {
+  /* Canvas */
+  --gdg-bg: #1e1e1e; /* Black 02 */
+  --gdg-surface: #262626;
+  --gdg-surface-2: #2f2f2f;
+  --gdg-hairline: #3a3a3a;
+
+  /* Text */
+  --gdg-text: #f0f0f0;
+  --gdg-text-muted: #a8a8a8;
+  /* Design-Philosophy.md §4.1 lists this swatch as #777777 at "4.6:1" — the
+     actual WCAG relative-luminance contrast of #777777 on #1e1e1e is 3.72:1
+     (confirmed independently by axe-core, e2e/accessibility.spec.ts), which
+     fails AA. #8a8a8a is the nearest value that actually clears 4.5:1
+     (4.83:1) while staying visually the "faintest" tier below text-muted. */
+  --gdg-text-faint: #8a8a8a;
+
+  /* Core (graphics, strokes, large type only) */
+  --gdg-blue-500: #4285f4;
+  --gdg-green-500: #34a853;
+  --gdg-yellow-600: #f9ab00;
+  --gdg-red-500: #ea4335;
+
+  /* Halftone (text, links, small UI on dark) */
+  --gdg-blue-ht: #57caff;
+  --gdg-green-ht: #5cdb6d;
+  --gdg-yellow-ht: #ffd427;
+  --gdg-red-ht: #ff7daf;
+
+  /* Pastel (light surfaces, photo plates only) */
+  --gdg-blue-pastel: #c3ecf6;
+  --gdg-green-pastel: #ccf6c5;
+  --gdg-yellow-pastel: #ffe7a5;
+  --gdg-red-pastel: #f8d8d8;
+
+  /* Route accent — reassigned per route via [data-accent] on a wrapper, never on <html> */
+  --accent: var(--gdg-blue-500);
+  --accent-text: var(--gdg-blue-ht);
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+[data-accent="green"] {
+  --accent: var(--gdg-green-500);
+  --accent-text: var(--gdg-green-ht);
+}
+[data-accent="yellow"] {
+  --accent: var(--gdg-yellow-600);
+  --accent-text: var(--gdg-yellow-ht);
+}
+[data-accent="red"] {
+  --accent: var(--gdg-red-500);
+  --accent-text: var(--gdg-red-ht);
+}
+
+@theme inline {
+  /* Fonts — variables set by next/font/local via .variable className in layout.tsx */
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  /* Colors */
+  --color-bg: var(--gdg-bg);
+  --color-surface: var(--gdg-surface);
+  --color-surface-2: var(--gdg-surface-2);
+  --color-hairline: var(--gdg-hairline);
+
+  --color-text: var(--gdg-text);
+  --color-text-muted: var(--gdg-text-muted);
+  --color-text-faint: var(--gdg-text-faint);
+
+  --color-blue-500: var(--gdg-blue-500);
+  --color-green-500: var(--gdg-green-500);
+  --color-yellow-600: var(--gdg-yellow-600);
+  --color-red-500: var(--gdg-red-500);
+
+  --color-blue-ht: var(--gdg-blue-ht);
+  --color-green-ht: var(--gdg-green-ht);
+  --color-yellow-ht: var(--gdg-yellow-ht);
+  --color-red-ht: var(--gdg-red-ht);
+
+  --color-blue-pastel: var(--gdg-blue-pastel);
+  --color-green-pastel: var(--gdg-green-pastel);
+  --color-yellow-pastel: var(--gdg-yellow-pastel);
+  --color-red-pastel: var(--gdg-red-pastel);
+
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-accent-soft: var(--accent-soft);
+
+  /* 4px spacing rhythm: 4·8·12·16·24·32·48·64·96 fall out of Tailwind's default
+     numeric scale once the base unit is 4px (spacing-1=4px … spacing-24=96px). */
+  --spacing: 0.25rem;
+
+  /* Radius */
+  --radius-card: 1rem; /* 16px mobile */
+  --radius-card-lg: 1.5rem; /* 24px desktop */
+  --radius-pill: 999px;
+
+  /* Type scale — fluid clamp() between a 360px and 1140px viewport, §5.3 */
+  --text-hero: clamp(2.25rem, 1.327rem + 4.1vw, 4.25rem);
+  --text-hero--line-height: 1.05;
+  --text-hero--letter-spacing: -0.02em;
+  --text-hero--font-weight: 700;
+
+  --text-h1: clamp(1.75rem, 1.404rem + 1.54vw, 2.5rem);
+  --text-h1--line-height: 1.15;
+  --text-h1--letter-spacing: -0.01em;
+  --text-h1--font-weight: 700;
+
+  --text-h2: clamp(1.375rem, 1.202rem + 0.77vw, 1.75rem);
+  --text-h2--line-height: 1.2;
+  --text-h2--font-weight: 700;
+
+  --text-h3: clamp(1.125rem, 1.067rem + 0.26vw, 1.25rem);
+  --text-h3--line-height: 1.3;
+  --text-h3--font-weight: 700;
+
+  --text-body: clamp(1rem, 0.971rem + 0.13vw, 1.0625rem);
+  --text-body--line-height: 1.6;
+  --text-body--font-weight: 400;
+
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.5;
+
+  --text-meta: 0.8125rem; /* Mono, metadata layer — dates, venues, counts, tags */
+  --text-meta--line-height: 1.4;
+  --text-meta--letter-spacing: 0.02em;
+
+  --text-eyebrow: 0.75rem; /* Mono, uppercase eyebrows/notch labels */
+  --text-eyebrow--line-height: 1.4;
+  --text-eyebrow--letter-spacing: 0.08em;
+  --text-eyebrow--font-weight: 500;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+/* Visible focus ring everywhere — quality floor, Design-Philosophy.md §10 */
+:focus-visible {
+  outline: 2px solid var(--accent-text);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

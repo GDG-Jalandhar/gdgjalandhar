@@ -1,0 +1,64 @@
+/*
+ * The notch shape needs clip-path (for the L-cut) coordinate-locked to an SVG
+ * stroke overlay — neither is expressible as Tailwind utilities, per
+ * Design-Philosophy.md §13's own CSS-Modules boundary test.
+ *
+ * Notch geometry is expressed in percentages of the card's own box (not the
+ * spec's literal 96×40px) so the CSS clip-path and the SVG overlay's
+ * viewBox="0 0 100 100" stay perfectly coordinate-locked at any card size —
+ * a deliberate simplification flagged for a follow-up design pass against
+ * real card widths if the proportions read wrong in review.
+ */
+.notch {
+  --notch-w: 26%;
+  --notch-h: 15%;
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: var(--gdg-surface);
+  clip-path: polygon(
+    var(--notch-w) 0,
+    100% 0,
+    100% 100%,
+    0 100%,
+    0 var(--notch-h),
+    var(--notch-w) var(--notch-h)
+  );
+}
+
+@media (min-width: 768px) {
+  .notch {
+    border-radius: var(--radius-card-lg);
+  }
+}
+
+.stroke {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.eyebrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--notch-w);
+  height: var(--notch-h);
+  display: flex;
+  align-items: center;
+  padding-inline-start: 0.75rem;
+}
+
+.card {
+  border-radius: var(--radius-card);
+  border: 1px solid var(--gdg-hairline);
+  background: var(--gdg-surface);
+}
+
+@media (min-width: 768px) {
+  .card {
+    border-radius: var(--radius-card-lg);
+  }
+}
