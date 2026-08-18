@@ -31,6 +31,20 @@ pnpm test:e2e:offline  # offline-navigation.spec.ts only — builds + runs `pnpm
 
 **Fix: `rm -rf .next` before restarting `pnpm dev`** whenever you've just run `pnpm build`, or changed anything under `src/mocks/`.
 
+## Deployment (Firebase App Hosting / Cloud Run)
+
+`next.config.ts` sets `output: "standalone"` — platforms like Firebase App Hosting run `.next/standalone/server.js` directly rather than `next start`; without it, the container has nothing to launch and fails its startup health check (confirmed: this is exactly what happened on first deploy). If you ever see a Cloud Run "container failed to start and listen on the port" error here, `output: "standalone"` being absent is the first thing to check.
+
+With `output: "standalone"` on **pnpm**, Next's file tracer misses `@swc/helpers`' ESM/CJS interop files when copying into the standalone bundle — confirmed locally by running `node .next/standalone/server.js`, which crashed with `MODULE_NOT_FOUND` for `@swc/helpers/esm/_interop_require_default.js` even though the file exists in the real `node_modules`. Fixed via `outputFileTracingIncludes` in `next.config.ts` forcing the whole package in. If a similar `MODULE_NOT_FOUND` shows up for a *different* package after a dependency change, the fix is the same shape: add it to `outputFileTracingIncludes`, don't just add the dependency.
+
+**Local verification before trusting a deploy**, since this is the closest approximation to what Cloud Run actually runs:
+```bash
+rm -rf .next && pnpm build
+cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/
+PORT=8080 HOSTNAME=0.0.0.0 node .next/standalone/server.js
+```
+`next start` alone does **not** exercise this path — it ignores `output: "standalone"` and runs the full project directly, so it won't catch standalone-specific tracing gaps like the one above.
+
 ## Architecture
 
 - **`src/lib/gdg/`** — the whole Bevy integration layer, in dependency order: `constants.ts` (chapter ID, API base) → `schema.ts` (Zod) → `client.ts` (`fetchEventList`, `fetchEventDetail`, ISR revalidate: 300s lists / 3600s detail) → `normalize.ts` (raw → `GdgEvent`, the only place raw Bevy field names should ever appear) → `agenda-parser.ts` / `sanitize.ts` (defensive parsing, both have dedicated unit tests) → `types.ts` (`GdgEvent` shape) → `format-event.ts` (`Intl.DateTimeFormat`-based display helpers). Nothing outside this folder should import raw Bevy shapes — always go through `normalize.ts`'s `GdgEvent`.
