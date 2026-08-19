@@ -14,7 +14,7 @@ export async function Hero() {
 
   if (!nextEvent) {
     return (
-      <Notch eyebrow={strings.hero.announcingSoonEyebrow} className="max-w-xl">
+      <Notch eyebrow={strings.hero.announcingSoonEyebrow} className="max-w-3xl">
         <h1 className="text-hero text-text">
           Local developers. <span className="font-bold text-accent-text">Building together.</span>
         </h1>
@@ -32,7 +32,7 @@ export async function Hero() {
   }
 
   return (
-    <Notch eyebrow={strings.hero.upcomingEyebrow} className="max-w-xl">
+    <Notch eyebrow={strings.hero.upcomingEyebrow} className="max-w-3xl">
       <h1 className="text-hero text-text">{nextEvent.title}</h1>
       <div className="mt-4 flex flex-col gap-1 font-mono text-meta text-text-muted">
         <span>{formatEventDateTimeRange(nextEvent)}</span>

@@ -6,6 +6,7 @@ import { Glyph } from "@/components/glyphs/Glyph";
 import { trackEvent, type JoinPlacement } from "@/lib/analytics";
 
 type Variant = "primary" | "secondary" | "ghost";
+type Size = "default" | "sm";
 
 // A plain, serializable event descriptor rather than an onClick closure, so
 // Server Components (e.g. the Home page) can pass tracking intent down to
@@ -15,6 +16,7 @@ type AnalyticsIntent = { name: "join_click"; placement: JoinPlacement } | { name
 
 type CommonProps = {
   variant?: Variant;
+  size?: Size;
   children: ReactNode;
   className?: string;
   analyticsEvent?: AnalyticsIntent;
@@ -32,12 +34,21 @@ type ButtonProps = CommonProps & {
 const VARIANT_CLASSES: Record<Variant, string> = {
   // Solid accent fill, dark text on bright accent (Design-Philosophy.md §8) —
   // "one primary per viewport" is a content discipline, not enforceable in CSS.
-  primary:
-    "inline-flex h-12 items-center justify-center gap-2 rounded-pill bg-accent px-6 font-medium text-bg transition-colors hover:opacity-90",
+  primary: "inline-flex items-center justify-center gap-2 rounded-pill bg-accent font-medium text-bg transition-colors hover:opacity-90",
   secondary:
-    "inline-flex h-12 items-center justify-center gap-2 rounded-pill border-[1.5px] border-accent px-6 font-medium text-accent-text transition-colors hover:bg-accent-soft",
+    "inline-flex items-center justify-center gap-2 rounded-pill border-[1.5px] border-accent font-medium text-accent-text transition-colors hover:bg-accent-soft",
   ghost:
     "inline-flex items-center gap-1.5 font-medium text-accent-text underline decoration-transparent transition-colors hover:decoration-current",
+};
+
+// Only primary/secondary are sized boxes (ghost is an inline text link with
+// no fixed height). "sm" exists for the sticky header's Join button, which
+// sits in a 56px bar next to a 40px menu toggle — the default 48px CTA
+// height reads oversized there even though it's correct as the full-width
+// drawer/hero CTA size.
+const SIZE_CLASSES: Record<Size, string> = {
+  default: "h-12 px-6",
+  sm: "h-10 px-5",
 };
 
 function GhostArrow() {
@@ -45,8 +56,10 @@ function GhostArrow() {
 }
 
 export function Button(props: LinkProps | ButtonProps) {
-  const { variant = "primary", children, className, analyticsEvent, ...rest } = props;
-  const classes = [VARIANT_CLASSES[variant], className].filter(Boolean).join(" ");
+  const { variant = "primary", size = "default", children, className, analyticsEvent, ...rest } = props;
+  const classes = [VARIANT_CLASSES[variant], variant !== "ghost" && SIZE_CLASSES[size], className]
+    .filter(Boolean)
+    .join(" ");
   const content =
     variant === "ghost" ? (
       <>

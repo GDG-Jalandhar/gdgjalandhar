@@ -55,7 +55,12 @@ export function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Button href={chapter.joinUrl} external analyticsEvent={{ name: "join_click", placement: "navbar" }}>
+          <Button
+            href={chapter.joinUrl}
+            external
+            size="sm"
+            analyticsEvent={{ name: "join_click", placement: "navbar" }}
+          >
             {strings.nav.join}
           </Button>
           <button
