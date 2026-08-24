@@ -5,7 +5,7 @@ import { EventBanner } from "@/features/events/components/EventBanner";
 import { VenueBlock } from "@/features/events/components/VenueBlock";
 import { RegistrationCta } from "@/features/events/components/RegistrationCta";
 import { AgendaTimeline } from "@/features/events/components/AgendaTimeline";
-import { Prose } from "@/features/events/components/Prose";
+import { Prose } from "@/components/ui/Prose";
 import { TagChip } from "@/features/events/components/TagChip";
 import { CohostBadge } from "@/features/events/components/CohostBadge";
 import { ShareControl } from "@/features/events/components/ShareControl";

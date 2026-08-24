@@ -4,6 +4,7 @@ import { RouteAccent } from "@/components/layout/RouteAccent";
 import { Hero } from "@/features/home/components/Hero";
 import { HeroSkeleton } from "@/features/home/components/HeroSkeleton";
 import { WhoWeAre } from "@/features/home/components/WhoWeAre";
+import { WhoWeAreSkeleton } from "@/features/home/components/WhoWeAreSkeleton";
 import { WhatsNext } from "@/features/home/components/WhatsNext";
 import { Recently } from "@/features/home/components/Recently";
 import { StripSkeleton } from "@/features/home/components/StripSkeleton";
@@ -24,7 +25,9 @@ export default function Home() {
           <Hero />
         </Suspense>
 
-        <WhoWeAre />
+        <Suspense fallback={<WhoWeAreSkeleton />}>
+          <WhoWeAre />
+        </Suspense>
 
         <Suspense fallback={<StripSkeleton />}>
           <WhatsNext />

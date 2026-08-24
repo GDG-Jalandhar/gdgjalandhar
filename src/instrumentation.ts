@@ -1,8 +1,8 @@
 export async function register() {
-  // Dev-only: intercepts server-side `fetch` calls to the Bevy API with msw
-  // so `next dev` runs against the fixtures in `src/mocks/` without a live
-  // network dependency. Never runs in production or during `next build`.
-  if (process.env.NODE_ENV === "development" && process.env.NEXT_RUNTIME === "nodejs") {
+  // Opt-in only: `pnpm dev:mock` serves the fixtures in `src/mocks/`. Plain
+  // `pnpm dev` hits the real Bevy API, same as `next build` does. The runtime
+  // guard stops a second registration in the edge runtime.
+  if (process.env.USE_MOCKS === "1" && process.env.NEXT_RUNTIME === "nodejs") {
     const { server } = await import("./mocks/server");
     server.listen({ onUnhandledRequest: "bypass" });
   }

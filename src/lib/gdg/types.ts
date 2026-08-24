@@ -49,9 +49,13 @@ export type GdgEvent = {
   tags: string[];
   agenda: Agenda | null; // null when absent, hidden, empty, or unparseable
   media: {
-    banner: string;
-    thumbnail: string;
+    banner: string; // 4:1 (2560x640) — detail page
+    thumbnail: string; // 1:1 (1000x1000) — cards
+    // Two separate flags because Bevy uses two DIFFERENT placeholder markers
+    // (`GDG_Bevy_DefaultEventBanner` vs `GDG_Bevy_DefaultEventThumbnail`), and
+    // they don't agree: some events ship a placeholder banner but real poster art.
     isDefaultBanner: boolean;
+    isDefaultThumbnail: boolean;
     videoUrl: string | null;
     slidesUrl: string | null;
   };
@@ -63,4 +67,13 @@ export type GdgEvent = {
     isOurs: boolean;
   };
   bevyUrl: string; // the canonical Bevy event page — D-13
+};
+
+// The chapter profile, from Bevy's `chapter_slim` endpoint. Same rule as
+// GdgEvent: nothing raw from Bevy escapes normalize.ts.
+export type GdgChapter = {
+  id: number;
+  title: string;
+  membersCount: number;
+  descriptionHtml: string; // sanitized, self-referential contact block stripped
 };

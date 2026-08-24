@@ -5,4 +5,9 @@
 // no meaning in this stack.
 export const CHAPTER_ID = 781;
 
+// The chapter profile endpoint (`/api/chapter_slim/<slug>/`) is keyed by SLUG,
+// not by the numeric ID — `/api/chapter_slim/781/` 404s and `/api/chapter/781/`
+// is 403. Same "never hardcode it twice" rule as CHAPTER_ID above.
+export const CHAPTER_SLUG = "gdg-jalandhar";
+
 export const GDG_API_BASE = "https://gdg.community.dev/api";
