@@ -10,7 +10,7 @@ The website for the GDG Jalandhar developer community — a mobile-first Progres
 - **Serwist** for the service worker — install prompt, offline fallback page, update-available flow
 - **Zod** for API response validation, **isomorphic-dompurify** for sanitizing organizer-authored HTML (server-side only)
 - **Vitest** + React Testing Library for unit tests, **Playwright** for e2e (smoke, accessibility, offline navigation)
-- **msw** to mock the dev environment so `next dev` never depends on a live network call
+- **msw** for an opt-in offline dev mode (`pnpm dev:mock`) — plain `pnpm dev` runs against the live Bevy API
 
 ## Getting started
 
@@ -19,19 +19,22 @@ pnpm install
 pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). The dev server runs against local fixtures (see `src/mocks/`) rather than the live network, so it works offline and produces consistent data for local development.
+Open [http://localhost:3000](http://localhost:3000). The dev server runs against the **live Bevy API**, the same source `pnpm build` uses.
+
+If you need to work offline, or want a fixed data set that exercises edge cases the live chapter doesn't currently expose (a cohosted foreign-chapter event, a malformed agenda, attendees over capacity), run `pnpm dev:mock` instead — that serves the fixtures in `src/mocks/`. The two modes use separate build directories (`.next` and `.next-mock`), so switching between them never needs a cache wipe.
 
 ## Commands
 
 ```bash
-pnpm dev              # dev server, mocked data
+pnpm dev              # dev server, live Bevy API
+pnpm dev:mock          # dev server, msw fixtures (offline-friendly)
 pnpm build             # production build
 pnpm start             # serve the production build
 pnpm lint               # eslint
 pnpm typecheck          # tsc --noEmit
 pnpm test                # unit tests (vitest)
 pnpm test:watch
-pnpm test:e2e            # e2e smoke + accessibility tests (playwright, against `pnpm dev`)
+pnpm test:e2e            # e2e smoke + accessibility tests (playwright, against `pnpm dev:mock`)
 pnpm test:e2e:offline    # offline-navigation e2e test (needs a production build)
 ```
 
@@ -44,7 +47,7 @@ src/
   features/       # route-specific composition (home, events, about)
   lib/            # data normalization, formatting, fonts, SEO helpers
   data/           # hand-authored chapter/team content not available from any API
-  mocks/          # msw handlers + fixtures used by `next dev` and the unit tests
+  mocks/          # msw handlers + fixtures used by `pnpm dev:mock`, the e2e suite, and the unit tests
 public/
   brand/          # logo lockups used at runtime
   icons/          # PWA install icons

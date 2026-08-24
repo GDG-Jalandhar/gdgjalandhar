@@ -22,6 +22,24 @@ describe("sanitizeEventHtml", () => {
     expect(out).toContain("<li>Item</li>");
   });
 
+  // Bevy's rich-text editor emits presentational <b>/<i>, not <strong>/<em> —
+  // the chapter description is written entirely in <b>. Without these in the
+  // allowlist DOMPurify keeps the text and silently drops all the emphasis.
+  it("keeps <b> and <i>, which Bevy's editor emits instead of <strong>/<em>", () => {
+    const out = sanitizeEventHtml("<p>Formed in <b>February 2011</b> and <i>still running</i></p>");
+    expect(out).toContain("<b>February 2011</b>");
+    expect(out).toContain("<i>still running</i>");
+  });
+
+  it("strips inline style attributes", () => {
+    const out = sanitizeEventHtml(
+      '<a href="https://example.com" style="background-color: rgb(255, 255, 255);">link</a>',
+    );
+    expect(out).not.toContain("style");
+    expect(out).not.toContain("background-color");
+    expect(out).toContain('href="https://example.com"');
+  });
+
   it("forces target=_blank and a safe rel on links, stripping other attributes", () => {
     const out = sanitizeEventHtml('<a href="https://example.com" onclick="evil()" class="x">link</a>');
     expect(out).toContain('href="https://example.com"');

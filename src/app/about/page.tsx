@@ -1,7 +1,10 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { RouteAccent } from "@/components/layout/RouteAccent";
 import { Button } from "@/components/ui/Button";
 import { TeamCard } from "@/features/about/components/TeamCard";
+import { ChapterIntro } from "@/features/about/components/ChapterIntro";
+import { ChapterIntroSkeleton } from "@/features/about/components/ChapterIntroSkeleton";
 import { chapter } from "@/data/chapter";
 import { team } from "@/data/team";
 import { yearsSince } from "@/lib/format";
@@ -28,14 +31,14 @@ export default function AboutPage() {
             EST. FEB {chapter.foundedISO.slice(0, 4)} · {yearsSince()} YEARS RUNNING
           </p>
           <h1 className="mt-2 text-h1 text-text">About {chapter.name}</h1>
-          <p className="mt-4 text-body text-text-muted">
-            Google Developer Groups are inclusive local communities — all levels welcome, beginners
-            explicitly included. In Jalandhar, that means talks, hands-on workshops, and hackathons
-            across Android, Web, Cloud, and AI, run by volunteers for the developer community in Punjab.
-            We&apos;ve been doing this since February 2011, which makes us one of the longest-running GDG
-            chapters in India.
-          </p>
         </div>
+
+        {/* A-1/A-7: the chapter's own description, live from Bevy, so the site
+            and the chapter page can't drift apart. Stat row sits under it —
+            Design-Philosophy §8 puts these above the fold on About. */}
+        <Suspense fallback={<ChapterIntroSkeleton />}>
+          <ChapterIntro />
+        </Suspense>
 
         <section className="flex flex-col gap-6">
           <p className="font-mono text-eyebrow uppercase tracking-wide text-accent-text">{"// TEAM"}</p>

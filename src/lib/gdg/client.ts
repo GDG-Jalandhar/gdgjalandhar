@@ -1,8 +1,8 @@
 import "server-only";
-import { CHAPTER_ID, GDG_API_BASE } from "./constants";
-import { eventListEnvelopeSchema, rawEventDetailSchema } from "./schema";
-import { normalizeEventDetail, normalizeEventListItem } from "./normalize";
-import type { GdgEvent } from "./types";
+import { CHAPTER_ID, CHAPTER_SLUG, GDG_API_BASE } from "./constants";
+import { eventListEnvelopeSchema, rawChapterSchema, rawEventDetailSchema } from "./schema";
+import { normalizeChapter, normalizeEventDetail, normalizeEventListItem } from "./normalize";
+import type { GdgChapter, GdgEvent } from "./types";
 
 export class GdgApiError extends Error {
   constructor(
@@ -77,4 +77,31 @@ export async function fetchEventDetail(slug: string): Promise<GdgEvent | null> {
   if (parsed.data.is_hidden) return null;
 
   return normalizeEventDetail(parsed.data);
+}
+
+/**
+ * The chapter profile — member count and the organizer-authored description.
+ *
+ * Deliberately does NOT follow the throw-on-failure convention the two event
+ * fetches above use. Nothing here is load-bearing: the member count is a
+ * decorative stat and the description has a hardcoded fallback, so a Bevy
+ * outage must not be able to take down the home page or About over it. Returns
+ * null on ANY failure — network, non-200, or schema drift — and callers fall
+ * back to `src/data/chapter.ts`. Same never-throw contract as `parseAgenda`.
+ *
+ * Note the endpoint is keyed by SLUG: `/api/chapter_slim/781/` 404s, and
+ * `/api/chapter/781/` is 403. See constants.ts.
+ */
+export async function fetchChapter(): Promise<GdgChapter | null> {
+  try {
+    const res = await fetch(`${GDG_API_BASE}/chapter_slim/${CHAPTER_SLUG}/`, {
+      next: { revalidate: 3600 }, // a member count and a chapter blurb both move slowly
+    });
+    if (!res.ok) return null;
+
+    const parsed = rawChapterSchema.safeParse(await res.json());
+    return parsed.success ? normalizeChapter(parsed.data) : null;
+  } catch {
+    return null;
+  }
 }

@@ -2,10 +2,16 @@ import "server-only";
 import { CHAPTER_ID } from "./constants";
 import { parseAgenda } from "./agenda-parser";
 import { sanitizeEventHtml } from "./sanitize";
-import type { RawEventDetail, RawEventListItem } from "./schema";
-import type { GdgEvent } from "./types";
+import { stripContactParagraphs } from "./chapter-description";
+import type { RawChapter, RawEventDetail, RawEventListItem } from "./schema";
+import type { GdgChapter, GdgEvent } from "./types";
 
+// Bevy ships TWO different placeholder markers, and they don't agree with each
+// other: measured against the live chapter, 7 of the first 100 completed events
+// have a placeholder banner but real poster art in `cropped_picture_url`. Cards
+// render the thumbnail, detail renders the banner, so each needs its own check.
 const DEFAULT_BANNER_MARKER = "GDG_Bevy_DefaultEventBanner";
+const DEFAULT_THUMBNAIL_MARKER = "GDG_Bevy_DefaultEventThumbnail";
 
 /** D-7: custom_tickets_url → cohost_registration_url → url. */
 function registrationUrl(event: Pick<RawEventDetail, "custom_tickets_url" | "cohost_registration_url" | "url" | "use_external_ticketing">): string {
@@ -29,6 +35,7 @@ export function normalizeEventDetail(raw: RawEventDetail): GdgEvent {
   const startAt = new Date(raw.start_date);
   const endAt = raw.end_date ? new Date(raw.end_date) : null;
   const banner = raw.cropped_banner_url ?? raw.banner ?? "";
+  const thumbnail = raw.cropped_picture_url ?? banner;
   const isDefaultBanner = banner.includes(DEFAULT_BANNER_MARKER);
 
   const agenda = raw.hide_agenda_on_event_page ? null : parseAgenda(raw.agenda);
@@ -72,8 +79,9 @@ export function normalizeEventDetail(raw: RawEventDetail): GdgEvent {
     agenda,
     media: {
       banner,
-      thumbnail: raw.cropped_picture_url ?? banner,
+      thumbnail,
       isDefaultBanner,
+      isDefaultThumbnail: thumbnail.includes(DEFAULT_THUMBNAIL_MARKER),
       videoUrl: raw.video_url ?? null,
       slidesUrl: raw.slideshare_url ?? null,
     },
@@ -101,6 +109,7 @@ export function normalizeEventListItem(raw: RawEventListItem): GdgEvent {
   const startAt = new Date(raw.start_date);
   const endAt = raw.end_date ? new Date(raw.end_date) : null;
   const banner = raw.cropped_banner_url ?? "";
+  const thumbnail = raw.cropped_picture_url ?? banner;
 
   const venue =
     raw.venue_name
@@ -133,8 +142,9 @@ export function normalizeEventListItem(raw: RawEventListItem): GdgEvent {
     agenda: null,
     media: {
       banner,
-      thumbnail: raw.cropped_picture_url ?? banner,
+      thumbnail,
       isDefaultBanner: banner.includes(DEFAULT_BANNER_MARKER),
+      isDefaultThumbnail: thumbnail.includes(DEFAULT_THUMBNAIL_MARKER),
       videoUrl: null,
       slidesUrl: null,
     },
@@ -146,5 +156,20 @@ export function normalizeEventListItem(raw: RawEventListItem): GdgEvent {
       isOurs: raw.chapter_id === CHAPTER_ID,
     },
     bevyUrl: raw.url,
+  };
+}
+
+/**
+ * Maps Bevy's `chapter_slim` object to `GdgChapter`. The description is
+ * organizer-authored HTML with the same hazards as an event description, so it
+ * goes through the same sanitizer, then `stripContactParagraphs` removes the
+ * self-referential contact block (see that module for why).
+ */
+export function normalizeChapter(raw: RawChapter): GdgChapter {
+  return {
+    id: raw.id,
+    title: raw.title,
+    membersCount: raw.members_count,
+    descriptionHtml: stripContactParagraphs(sanitizeEventHtml(raw.description)),
   };
 }

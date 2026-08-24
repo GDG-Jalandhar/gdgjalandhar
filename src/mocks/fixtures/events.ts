@@ -11,11 +11,20 @@ import { bangkokAgendaString } from "./agenda";
  */
 
 // Real Bevy banners live on Cloudinary (PRD §6.6 D-6); these fixture URLs use
-// a placeholder image service instead so `next dev` renders an actual image
-// rather than a 404 — Phase 2 swaps in live Cloudinary URLs from the real API.
-const banner = (seed: string) => `https://picsum.photos/seed/${seed}/1280/720`;
-const thumb = (seed: string) => `https://picsum.photos/seed/${seed}/400/400`;
+// a placeholder image service instead so `pnpm dev:mock` renders an actual
+// image rather than a 404. The dimensions are not arbitrary: every real
+// `cropped_banner_url` is a 2560x640 Cloudinary crop, so the fixtures match
+// that 4:1 ratio and mock mode lays out exactly like production.
+const banner = (seed: string) => `https://picsum.photos/seed/${seed}/2560/640`;
+// 1000x1000: what Cloudinary actually delivers for `cropped_picture_url`
+// (declared 500x500, doubled by the `dpr_2.0` in the chain). Cards render
+// this square, uncropped.
+const thumb = (seed: string) => `https://picsum.photos/seed/${seed}/1000/1000`;
 const DEFAULT_BANNER = banner("GDG_Bevy_DefaultEventBanner");
+// Bevy uses a SEPARATE marker for placeholder thumbnails, and the two do not
+// agree in real data — some events have a placeholder banner but real poster
+// art. `flutter-forward-extended-2025` below reproduces exactly that case.
+const DEFAULT_THUMBNAIL = thumb("GDG_Bevy_DefaultEventThumbnail");
 
 export const rawEvents = {
   buildWithAiBootcamp: {
@@ -107,8 +116,8 @@ export const rawEvents = {
     banner: DEFAULT_BANNER,
     event_banner: DEFAULT_BANNER,
     cropped_banner_url: DEFAULT_BANNER,
-    picture: DEFAULT_BANNER,
-    cropped_picture_url: DEFAULT_BANNER,
+    picture: DEFAULT_THUMBNAIL,
+    cropped_picture_url: DEFAULT_THUMBNAIL,
     tags: ["DevFest", "Community"],
     video_url: null,
     slideshare_url: null,
@@ -160,9 +169,12 @@ export const rawEvents = {
     venue_state: "Punjab",
     venue_zip_code: "144020",
     show_map: true,
-    banner: banner("flutter-forward-extended-2025"),
-    event_banner: banner("flutter-forward-extended-2025"),
-    cropped_banner_url: banner("flutter-forward-extended-2025"),
+    // Placeholder banner but REAL poster art — 7 of the chapter's first 100
+    // completed events look exactly like this, and it's the case that breaks
+    // if anything reuses `isDefaultBanner` to decide what a card renders.
+    banner: DEFAULT_BANNER,
+    event_banner: DEFAULT_BANNER,
+    cropped_banner_url: DEFAULT_BANNER,
     picture: thumb("flutter-forward-extended-2025"),
     cropped_picture_url: thumb("flutter-forward-extended-2025"),
     tags: ["Flutter", "Mobile"],

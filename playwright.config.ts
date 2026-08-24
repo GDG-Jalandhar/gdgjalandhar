@@ -14,7 +14,10 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: "pnpm dev",
+    // Pinned to the fixtures: this suite asserts against known slugs and must
+    // stay deterministic and network-free. `pnpm dev` alone now hits the live
+    // Bevy chapter, whose event list changes underneath the tests.
+    command: "USE_MOCKS=1 pnpm dev",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
   },

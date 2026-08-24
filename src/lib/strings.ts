@@ -18,6 +18,11 @@ export const strings = {
     details: "Details",
     joinCommunity: "Join the community",
   },
+  stats: {
+    members: "Members",
+    eventsHosted: "Events hosted",
+    yearsRunning: "Years running",
+  },
   home: {
     whoWeAreEyebrow: "// WHO WE ARE",
     whatsNextEyebrow: "// WHAT'S NEXT",

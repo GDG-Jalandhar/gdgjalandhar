@@ -96,6 +96,12 @@
      numeric scale once the base unit is 4px (spacing-1=4px … spacing-24=96px). */
   --spacing: 0.25rem;
 
+  /* Aspect — Bevy serves every `cropped_banner_url` as a 2560x640 Cloudinary
+     crop (verified against the live chapter, not inferred from the URL). The
+     banners are wide title cards with the event name centred, so rendering
+     them at any narrower ratio crops the title straight out of the middle. */
+  --aspect-banner: 4 / 1;
+
   /* Radius */
   --radius-card: 1rem; /* 16px mobile */
   --radius-card-lg: 1.5rem; /* 24px desktop */
