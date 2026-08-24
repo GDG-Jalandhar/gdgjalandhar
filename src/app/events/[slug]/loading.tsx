@@ -6,7 +6,7 @@ export default function Loading() {
         <div className="h-10 w-3/4 rounded bg-surface" />
         <div className="h-4 w-1/2 rounded bg-surface" />
       </div>
-      <div className="aspect-video rounded-lg bg-surface" />
+      <div className="aspect-banner rounded-lg bg-surface" />
       <div className="h-24 rounded bg-surface" />
     </div>
   );

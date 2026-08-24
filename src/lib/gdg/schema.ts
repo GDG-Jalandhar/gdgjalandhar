@@ -81,3 +81,17 @@ export const eventListEnvelopeSchema = z.object({
   count: z.number(),
   results: z.array(rawEventListItemSchema),
 });
+
+// Raw Bevy `chapter_slim` shape. Deliberately narrow: only the fields the site
+// actually consumes are validated, so an unrelated field changing upstream
+// can't fail the parse. `description` is optional — a chapter with an empty
+// profile is a legitimate state, not drift.
+export const rawChapterSchema = z.object({
+  id: z.number(),
+  title: z.string(),
+  members_count: z.number(),
+  member_count_is_at_limit: z.boolean().optional().default(false),
+  description: z.string().nullable().optional(),
+});
+
+export type RawChapter = z.infer<typeof rawChapterSchema>;

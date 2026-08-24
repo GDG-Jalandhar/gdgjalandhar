@@ -1,7 +1,11 @@
 import "server-only";
 import DOMPurify from "isomorphic-dompurify";
 
-const ALLOWED_TAGS = ["p", "br", "strong", "em", "u", "h2", "h3", "ul", "ol", "li", "a", "blockquote", "code"];
+// `b`/`i` are here alongside `strong`/`em` because Bevy's rich-text editor
+// emits the presentational tags, not the semantic ones — the chapter
+// description uses `<b>` on every emphasised phrase. Without them DOMPurify
+// keeps the text and silently drops all the bold.
+const ALLOWED_TAGS = ["p", "br", "strong", "b", "em", "i", "u", "h2", "h3", "ul", "ol", "li", "a", "blockquote", "code"];
 
 DOMPurify.addHook("afterSanitizeAttributes", (node) => {
   if (node.tagName === "A") {
