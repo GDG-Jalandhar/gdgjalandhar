@@ -49,8 +49,31 @@ export const strings = {
     agendaUnavailable: "Agenda not available.",
     notFoundTitle: "Event not found",
     notFoundBody: "This event doesn't exist, or isn't public anymore.",
+    // Bevy's `role` and `sponsor_type` are open vocabularies — these are the
+    // values it actually defines, and anything unlisted is titleized from the
+    // slug at render time rather than dropped (see lib/gdg/format-people.ts).
+    // Singular; the section headings pluralize.
+    roleLabels: {
+      speaker: "Speaker",
+      host: "Host",
+      moderator: "Moderator",
+      panelist: "Panelist",
+      judge: "Judge",
+      mentor: "Mentor",
+      facilitator: "Facilitator",
+      organizer: "Organizer",
+      partner: "Partner",
+    },
+    sponsorTypeLabels: {
+      sponsor: "Sponsor",
+      global_sponsor: "Global sponsor",
+      local_sponsor: "Local sponsor",
+      media_partner: "Media partner",
+      partner: "Partner",
+    },
   },
   about: {
+    teamEyebrow: "// TEAM",
     getInvolvedEyebrow: "// GET INVOLVED",
     speak: "Speak",
     sponsor: "Sponsor",

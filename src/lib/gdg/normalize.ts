@@ -3,8 +3,15 @@ import { CHAPTER_ID } from "./constants";
 import { parseAgenda } from "./agenda-parser";
 import { sanitizeEventHtml } from "./sanitize";
 import { stripContactParagraphs } from "./chapter-description";
-import type { RawChapter, RawEventDetail, RawEventListItem } from "./schema";
-import type { GdgChapter, GdgEvent } from "./types";
+import type {
+  RawChapter,
+  RawEventDetail,
+  RawEventListItem,
+  RawEventPerson,
+  RawEventSponsor,
+  RawTeamMember,
+} from "./schema";
+import type { GdgChapter, GdgEvent, GdgPerson, GdgSponsor, GdgTeamMember } from "./types";
 
 // Bevy ships TWO different placeholder markers, and they don't agree with each
 // other: measured against the live chapter, 7 of the first 100 completed events
@@ -172,4 +179,99 @@ export function normalizeChapter(raw: RawChapter): GdgChapter {
     membersCount: raw.members_count,
     descriptionHtml: stripContactParagraphs(sanitizeEventHtml(raw.description)),
   };
+}
+
+// Bevy lets an organizer save a person row with nothing filled in, and the API
+// returns it as a literal "- -" with an empty `{}` picture. Four such rows exist
+// across the first 35 events on this chapter; rendering them puts a nameless
+// placeholder avatar in the middle of a speaker grid.
+const PLACEHOLDER_NAME = /^[-\s]*$/;
+
+/**
+ * Maps `event_person` rows to `GdgPerson`. Drops the placeholder rows above and
+ * sorts by Bevy's own `order` field, which organizers set per role.
+ *
+ * The photo prefers `picture.thumbnail_url`: it's a square `g_face` Cloudinary
+ * crop, which is what an avatar frame wants, where `picture.url` is the
+ * uncropped original.
+ */
+export function normalizeEventPeople(raw: RawEventPerson[]): GdgPerson[] {
+  return [...raw]
+    .sort((a, b) => a.order - b.order)
+    .map((person) => ({
+      id: person.id,
+      name: [person.first_name, person.last_name].filter(Boolean).join(" ").trim(),
+      role: person.role,
+      title: person.title?.trim() ?? "",
+      company: person.company?.trim() ?? "",
+      photo: person.picture?.thumbnail_url ?? person.picture?.url ?? null,
+    }))
+    .filter((person) => !PLACEHOLDER_NAME.test(person.name));
+}
+
+/**
+ * Maps `event_sponsor` rows to `GdgSponsor`, honouring the `visible` flag.
+ *
+ * The logo deliberately uses `logo.url` and NOT `logo.thumbnail_url`: the
+ * thumbnail is a 200x200 `c_fill` crop, and these logos are wide (the two on
+ * the live chapter are 480x240 and 762x376), so the square crop cuts them in
+ * half. See `EventSponsors.tsx` for why they also need a light plate.
+ */
+export function normalizeEventSponsors(raw: RawEventSponsor[]): GdgSponsor[] {
+  return [...raw]
+    .filter((sponsor) => sponsor.visible)
+    .sort((a, b) => a.order - b.order)
+    .map((sponsor) => ({
+      id: sponsor.id,
+      company: sponsor.company,
+      logo: sponsor.logo?.url ?? null,
+      type: sponsor.sponsor_type,
+      url: sponsor.url || null,
+    }));
+}
+
+const ORGANIZER = /organi[sz]er/i;
+// Matches a title that says nothing the Organizer badge doesn't already say.
+const ORGANIZER_ONLY = /^(gdg\s+)?organi[sz]er$/i;
+
+/**
+ * Maps the chapter team array to `GdgTeamMember`.
+ *
+ * Bevy exposes two title fields and organizers fill them in inconsistently —
+ * on the live chapter one organizer has `user.title: "Organiser"` with the team
+ * `title` holding their day job, and another has exactly the reverse. So both
+ * are kept, `user.title` leads, and three collapses run in order:
+ *
+ *   1. Either field naming the Organizer role sets the badge, and a line that
+ *      only restates the badge is dropped (the pill already says it).
+ *   2. Identical lines collapse to one.
+ *   3. An empty primary is filled from the secondary.
+ *
+ * On today's real payload every member lands on one line plus an optional
+ * badge; the two-line path stays available for members whose titles differ.
+ *
+ * Order is Bevy's own — the endpoint has no ordering field, and the order it
+ * returns already matches the intended one.
+ */
+export function normalizeTeam(raw: RawTeamMember[]): GdgTeamMember[] {
+  return raw.map((member) => {
+    const jobTitle = member.user.title?.trim() ?? "";
+    const teamTitle = member.title?.trim() ?? "";
+    const isOrganizer = ORGANIZER.test(jobTitle) || ORGANIZER.test(teamTitle);
+
+    const lines = [jobTitle, teamTitle]
+      .filter((line) => line !== "")
+      .filter((line) => !(isOrganizer && ORGANIZER_ONLY.test(line)));
+
+    const [title = "", second = ""] = lines;
+    const secondaryTitle = second.toLowerCase() === title.toLowerCase() ? "" : second;
+
+    return {
+      name: member.user.full_name,
+      title,
+      secondaryTitle,
+      photo: member.user.cropped_avatar_url ?? member.user.avatar?.thumbnail_url ?? null,
+      isOrganizer,
+    };
+  });
 }

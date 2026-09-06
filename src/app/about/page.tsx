@@ -2,11 +2,11 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { RouteAccent } from "@/components/layout/RouteAccent";
 import { Button } from "@/components/ui/Button";
-import { TeamCard } from "@/features/about/components/TeamCard";
+import { TeamGrid } from "@/features/about/components/TeamGrid";
+import { TeamGridSkeleton } from "@/features/about/components/TeamGridSkeleton";
 import { ChapterIntro } from "@/features/about/components/ChapterIntro";
 import { ChapterIntroSkeleton } from "@/features/about/components/ChapterIntroSkeleton";
 import { chapter } from "@/data/chapter";
-import { team } from "@/data/team";
 import { yearsSince } from "@/lib/format";
 import { strings } from "@/lib/strings";
 
@@ -40,13 +40,15 @@ export default function AboutPage() {
           <ChapterIntro />
         </Suspense>
 
+        {/* A-2: live from Bevy's chapter team endpoint, with the static roster
+            in `src/data/team.ts` as the fallback — same shape as ChapterIntro. */}
         <section className="flex flex-col gap-6">
-          <p className="font-mono text-eyebrow uppercase tracking-wide text-accent-text">{"// TEAM"}</p>
-          <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
-            {team.map((member) => (
-              <TeamCard key={member.name} member={member} />
-            ))}
-          </div>
+          <p className="font-mono text-eyebrow uppercase tracking-wide text-accent-text">
+            {strings.about.teamEyebrow}
+          </p>
+          <Suspense fallback={<TeamGridSkeleton />}>
+            <TeamGrid />
+          </Suspense>
         </section>
 
         <section className="flex flex-col gap-6">

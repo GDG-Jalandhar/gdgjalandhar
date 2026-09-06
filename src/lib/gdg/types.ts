@@ -77,3 +77,45 @@ export type GdgChapter = {
   membersCount: number;
   descriptionHtml: string; // sanitized, self-referential contact block stripped
 };
+
+/**
+ * A speaker, judge, mentor, panelist, moderator, host — whoever Bevy's
+ * `event_person` endpoint returns for an event. `role` stays the raw Bevy slug:
+ * the vocabulary is open (see schema.ts), so the display label is derived at
+ * render time by `format-people.ts` rather than baked in here.
+ */
+export type GdgPerson = {
+  id: number;
+  name: string;
+  role: string;
+  title: string; // job title, "" when absent
+  company: string; // "" when absent
+  photo: string | null;
+};
+
+export type GdgSponsor = {
+  id: number;
+  company: string;
+  logo: string | null;
+  type: string; // raw Bevy slug, e.g. "media_partner"
+  url: string | null; // parsed but not rendered yet
+};
+
+/**
+ * A chapter organizer. Bevy carries two title fields that disagree with each
+ * other per person — the chapter-team role and the person's own job title —
+ * so `normalizeTeam` reconciles them into a primary line, an optional second
+ * line, and the Organizer badge flag.
+ */
+export type GdgTeamMember = {
+  name: string;
+  title: string;
+  secondaryTitle: string; // "" once deduped against `title` and the badge
+  photo: string | null;
+  isOrganizer: boolean;
+};
+
+// Grouping wrappers for the two event-detail sections. `label` is the display
+// heading; `role`/`type` stay the raw slug so a group is still identifiable.
+export type GdgPersonGroup = { role: string; label: string; people: GdgPerson[] };
+export type GdgSponsorGroup = { type: string; label: string; sponsors: GdgSponsor[] };

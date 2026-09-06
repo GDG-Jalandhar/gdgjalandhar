@@ -9,8 +9,16 @@ import { Prose } from "@/components/ui/Prose";
 import { TagChip } from "@/features/events/components/TagChip";
 import { CohostBadge } from "@/features/events/components/CohostBadge";
 import { ShareControl } from "@/features/events/components/ShareControl";
-import { fetchEventDetail, fetchEventList } from "@/lib/gdg/client";
+import { EventPeople } from "@/features/events/components/EventPeople";
+import { EventSponsors } from "@/features/events/components/EventSponsors";
+import {
+  fetchEventDetail,
+  fetchEventList,
+  fetchEventPeople,
+  fetchEventSponsors,
+} from "@/lib/gdg/client";
 import { formatEventDateTimeRange } from "@/lib/gdg/format-event";
+import { groupPeopleByRole, groupSponsorsByType } from "@/lib/gdg/format-people";
 import { eventJsonLd } from "@/lib/seo/jsonld";
 
 type Props = {
@@ -58,8 +66,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // won't index it) — not worth the added complexity here.
 export default async function EventDetailPage({ params }: Props) {
   const { slug } = await params;
-  const event = await fetchEventDetail(slug);
+  // People are keyed by slug, so that request parallelizes with the detail
+  // fetch. Sponsors are keyed by the numeric event id — which only the detail
+  // response carries, and passing the slug is a 400 — so they cost one more
+  // hop. Neither fetch can throw (see client.ts), so neither can 404 the page.
+  const [event, people] = await Promise.all([fetchEventDetail(slug), fetchEventPeople(slug)]);
   if (!event) notFound();
+  const sponsors = await fetchEventSponsors(event.id);
 
   return (
     <RouteAccent value={event.status === "upcoming" ? "green" : "yellow"}>
@@ -87,6 +100,10 @@ export default async function EventDetailPage({ params }: Props) {
         {event.descriptionHtml && <Prose html={event.descriptionHtml} />}
 
         <AgendaTimeline agenda={event.agenda} />
+
+        <EventPeople groups={groupPeopleByRole(people)} />
+
+        <EventSponsors groups={groupSponsorsByType(sponsors)} />
 
         {event.tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
