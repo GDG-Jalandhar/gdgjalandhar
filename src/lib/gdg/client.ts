@@ -1,8 +1,22 @@
 import "server-only";
 import { CHAPTER_ID, CHAPTER_SLUG, GDG_API_BASE } from "./constants";
-import { eventListEnvelopeSchema, rawChapterSchema, rawEventDetailSchema } from "./schema";
-import { normalizeChapter, normalizeEventDetail, normalizeEventListItem } from "./normalize";
-import type { GdgChapter, GdgEvent } from "./types";
+import {
+  eventListEnvelopeSchema,
+  eventPersonEnvelopeSchema,
+  eventSponsorEnvelopeSchema,
+  rawChapterSchema,
+  rawEventDetailSchema,
+  rawTeamSchema,
+} from "./schema";
+import {
+  normalizeChapter,
+  normalizeEventDetail,
+  normalizeEventListItem,
+  normalizeEventPeople,
+  normalizeEventSponsors,
+  normalizeTeam,
+} from "./normalize";
+import type { GdgChapter, GdgEvent, GdgPerson, GdgSponsor, GdgTeamMember } from "./types";
 
 export class GdgApiError extends Error {
   constructor(
@@ -101,6 +115,96 @@ export async function fetchChapter(): Promise<GdgChapter | null> {
 
     const parsed = rawChapterSchema.safeParse(await res.json());
     return parsed.success ? normalizeChapter(parsed.data) : null;
+  } catch {
+    return null;
+  }
+}
+
+/*
+ * Enrichment fetches — speakers/judges/mentors, sponsors, and the chapter team.
+ *
+ * All three follow `fetchChapter`'s never-throw contract rather than the
+ * throw-on-failure convention the event fetches use, and for the same reason:
+ * none of this is load-bearing. An event page whose speaker list failed to load
+ * is still a complete, correct event page, so a Bevy outage must not be able to
+ * turn one into a 500. Failures return an empty list (or null for the team,
+ * which has a static fallback) and the section simply doesn't render.
+ *
+ * All three revalidate hourly — a speaker roster moves at least as slowly as
+ * the event detail it hangs off.
+ */
+
+/**
+ * The people attached to an event: speakers, judges, mentors, panelists,
+ * moderators, hosts — the `role` vocabulary is open, see schema.ts.
+ *
+ * Keyed by SLUG. Passing the numeric event id returns `count: 0` with a 200,
+ * so a mistake here looks exactly like an event with no speakers and nothing
+ * in the logs explains it. Note this is the OPPOSITE key from
+ * `fetchEventSponsors` below.
+ */
+export async function fetchEventPeople(slug: string): Promise<GdgPerson[]> {
+  try {
+    const params = new URLSearchParams({ event: slug });
+    const res = await fetch(`${GDG_API_BASE}/event_person/?${params.toString()}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+
+    const parsed = eventPersonEnvelopeSchema.safeParse(await res.json());
+    return parsed.success ? normalizeEventPeople(parsed.data.results) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * An event's sponsors and partners.
+ *
+ * Keyed by NUMERIC ID — the opposite of `fetchEventPeople`. Passing a slug is a
+ * hard HTTP 400. Since only `normalizeEventDetail` carries a real id
+ * (`normalizeEventListItem` defaults it to 0), the guard below keeps a
+ * list-derived event from issuing a request that can only fail.
+ */
+export async function fetchEventSponsors(eventId: number): Promise<GdgSponsor[]> {
+  if (!eventId) return [];
+
+  try {
+    const params = new URLSearchParams({ event_id: String(eventId), order_by: "sponsor_type" });
+    const res = await fetch(`${GDG_API_BASE}/event_sponsor/?${params.toString()}`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return [];
+
+    const parsed = eventSponsorEnvelopeSchema.safeParse(await res.json());
+    return parsed.success ? normalizeEventSponsors(parsed.data.results) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * The chapter's organizers. Keyed by slug, like the chapter profile.
+ *
+ * Returns a BARE ARRAY upstream — no `links`/`count`/`results` envelope, unlike
+ * every other list endpoint here.
+ *
+ * Returns `null` rather than `[]` on failure so the caller can tell "Bevy is
+ * unreachable, use the static roster in `src/data/team.ts`" apart from "the
+ * chapter genuinely lists nobody" — which for this chapter would itself be a
+ * bug worth showing the fallback for.
+ */
+export async function fetchTeam(): Promise<GdgTeamMember[] | null> {
+  try {
+    const res = await fetch(`${GDG_API_BASE}/chapter_slim/${CHAPTER_SLUG}/team/`, {
+      next: { revalidate: 3600 },
+    });
+    if (!res.ok) return null;
+
+    const parsed = rawTeamSchema.safeParse(await res.json());
+    if (!parsed.success || parsed.data.length === 0) return null;
+
+    return normalizeTeam(parsed.data);
   } catch {
     return null;
   }

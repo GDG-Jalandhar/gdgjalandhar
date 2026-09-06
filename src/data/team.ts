@@ -1,15 +1,18 @@
-export type TeamMember = {
-  name: string;
-  title: string;
-  badge: "organizer" | null;
-  photo: string | null;
-};
+import type { GdgTeamMember } from "@/lib/gdg/types";
 
-// A-2 / A-2a / A-2b — "GDG Organizer" (never "GDG Lead"); badge only on the
-// two Organizers, Graphics Designer / Event Manager render as plain role text.
-export const team: TeamMember[] = [
-  { name: "Simar Preet Singh", title: "GDG Organizer", badge: "organizer", photo: null },
-  { name: "Amanpreet Kaur", title: "GDG Organizer", badge: "organizer", photo: null },
-  { name: "Qazi Zaid", title: "Graphics Designer", badge: null, photo: null },
-  { name: "Veer Pratap Singh", title: "Event Manager", badge: null, photo: null },
+/**
+ * FALLBACKS ONLY — not the displayed values. The team renders live from Bevy's
+ * `chapter_slim/<slug>/team/` endpoint (`fetchTeam`); this is what shows if that
+ * call fails, so an outage degrades to a stale roster rather than an empty
+ * section. Refresh it when the team changes, but don't rely on it.
+ *
+ * A-2 / A-2a / A-2b — "GDG Organizer" (never "GDG Lead"); the badge is for the
+ * two Organizers only, Graphics Designer and Event Manager render as plain Mono
+ * role text. Photos are null here because Bevy is the only place they live.
+ */
+export const team: GdgTeamMember[] = [
+  { name: "Simar Preet Singh", title: "", secondaryTitle: "", photo: null, isOrganizer: true },
+  { name: "Amanpreet Kaur", title: "", secondaryTitle: "", photo: null, isOrganizer: true },
+  { name: "Qazi Zaid", title: "Graphics Designer", secondaryTitle: "", photo: null, isOrganizer: false },
+  { name: "Veer Pratap Singh", title: "Event Manager", secondaryTitle: "", photo: null, isOrganizer: false },
 ];
