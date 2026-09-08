@@ -112,3 +112,4 @@ Write them the way a senior engineer does: short, factual, no padding.
 - **PR description:** a sentence or two on what changed and why, plus how it was verified. Bullets over prose.
 - No emoji, no marketing adjectives, no "comprehensive"/"robust"/"seamless", no restating the diff file by file, no summarizing what the tests already assert.
 - Don't pad a small change to look bigger. A one-line fix gets a one-line message.
+- **No AI attribution anywhere.** No `Co-Authored-By: Claude`, no `Claude-Session:` trailer, no "Generated with Claude Code" footer — not in commit messages, not in PR descriptions. The commit history is the author's.
