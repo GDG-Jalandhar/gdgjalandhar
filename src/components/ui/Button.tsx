@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode, Ref } from "react";
 import { Glyph } from "@/components/glyphs/Glyph";
 import { trackEvent, type JoinPlacement } from "@/lib/analytics";
 
@@ -29,6 +29,10 @@ type LinkProps = CommonProps & {
 
 type ButtonProps = CommonProps & {
   href?: undefined;
+  // React 19 passes `ref` as an ordinary prop, and the `{...buttonRest}` spread
+  // below already forwards it — this only tells the type system. Needed so a
+  // dialog opener can hold the trigger and restore focus to it on close.
+  ref?: Ref<HTMLButtonElement>;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, "className" | "children">;
 
 const VARIANT_CLASSES: Record<Variant, string> = {

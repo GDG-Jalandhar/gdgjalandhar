@@ -11,8 +11,40 @@ import type { GdgTeamMember } from "@/lib/gdg/types";
  * role text. Photos are null here because Bevy is the only place they live.
  */
 export const team: GdgTeamMember[] = [
-  { name: "Simar Preet Singh", title: "", secondaryTitle: "", photo: null, isOrganizer: true },
-  { name: "Amanpreet Kaur", title: "", secondaryTitle: "", photo: null, isOrganizer: true },
-  { name: "Qazi Zaid", title: "Graphics Designer", secondaryTitle: "", photo: null, isOrganizer: false },
-  { name: "Veer Pratap Singh", title: "Event Manager", secondaryTitle: "", photo: null, isOrganizer: false },
+  {
+    name: "Simar Preet Singh",
+    title: "",
+    secondaryTitle: "",
+    photo: null,
+    isOrganizer: true,
+    bioHtml: "",
+    twitter: null,
+  },
+  {
+    name: "Amanpreet Kaur",
+    title: "",
+    secondaryTitle: "",
+    photo: null,
+    isOrganizer: true,
+    bioHtml: "",
+    twitter: null,
+  },
+  {
+    name: "Qazi Zaid",
+    title: "Graphics Designer",
+    secondaryTitle: "",
+    photo: null,
+    isOrganizer: false,
+    bioHtml: "",
+    twitter: null,
+  },
+  {
+    name: "Veer Pratap Singh",
+    title: "Event Manager",
+    secondaryTitle: "",
+    photo: null,
+    isOrganizer: false,
+    bioHtml: "",
+    twitter: null,
+  },
 ];

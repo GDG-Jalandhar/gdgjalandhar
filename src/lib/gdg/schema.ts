@@ -134,6 +134,14 @@ export const rawEventPersonSchema = z.object({
   role: z.string(),
   order: z.number().optional().default(0),
   picture: rawImageSchema,
+  // Organizer-authored HTML — but only mostly. 7 of the 132 non-empty bios on
+  // this chapter are plain text with no tags at all, which is why nothing here
+  // may assume markup; `bio.ts` decides per value.
+  bio: z.string().nullable().optional(),
+  // Bare handles, never URLs, on every value measured (e.g. "AashiDutt",
+  // "aashi-dutt"). LinkedIn is rare — 3 of 159.
+  personal_twitter: z.string().nullable().optional(),
+  personal_linkedin_page: z.string().nullable().optional(),
 });
 
 export type RawEventPerson = z.infer<typeof rawEventPersonSchema>;
@@ -169,6 +177,10 @@ export const rawTeamMemberSchema = z.object({
     company: z.string().nullable().optional(),
     cropped_avatar_url: z.string().nullable().optional(),
     avatar: rawImageSchema,
+    // PLAIN TEXT with newlines here, unlike the event person's `bio` above,
+    // which is HTML. Same field name, different format — see `bio.ts`.
+    bio: z.string().nullable().optional(),
+    twitter: z.string().nullable().optional(),
   }),
 });
 

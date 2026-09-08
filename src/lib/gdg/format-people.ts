@@ -95,3 +95,24 @@ export function groupSponsorsByType(sponsors: GdgSponsor[]): GdgSponsorGroup[] {
     sponsors: groups.get(type) ?? [],
   }));
 }
+
+// Bevy stores socials as bare handles, so the URL is built here. `normalize.ts`
+// has already rejected anything that isn't a plain handle, but these stay
+// defensive: a bad value should drop the link, never render a broken one.
+const HANDLE = /^[A-Za-z0-9_.-]+$/;
+
+function cleanHandle(raw: string | null | undefined): string | null {
+  const value = raw?.trim().replace(/^@/, "") ?? "";
+  return value && HANDLE.test(value) ? value : null;
+}
+
+/** x.com, not twitter.com — it redirects, and the icon set already calls it `x`. */
+export function twitterUrl(raw: string | null | undefined): string | null {
+  const value = cleanHandle(raw);
+  return value && `https://x.com/${value}`;
+}
+
+export function linkedinUrl(raw: string | null | undefined): string | null {
+  const value = cleanHandle(raw);
+  return value && `https://www.linkedin.com/in/${value}`;
+}

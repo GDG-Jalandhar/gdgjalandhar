@@ -72,6 +72,14 @@ export const strings = {
       partner: "Partner",
     },
   },
+  people: {
+    viewProfile: "View profile",
+    close: "Close",
+    // `{name} on X` / `{name} on LinkedIn` — an icon link needs a real
+    // accessible name, never just the icon (Design-Philosophy.md §8).
+    onX: "on X",
+    onLinkedIn: "on LinkedIn",
+  },
   about: {
     teamEyebrow: "// TEAM",
     getInvolvedEyebrow: "// GET INVOLVED",

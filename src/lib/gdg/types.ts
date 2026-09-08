@@ -91,6 +91,9 @@ export type GdgPerson = {
   title: string; // job title, "" when absent
   company: string; // "" when absent
   photo: string | null;
+  bioHtml: string; // sanitized; "" when absent — see bio.ts for the two source formats
+  twitter: string | null; // bare handle, never a URL
+  linkedin: string | null; // bare handle, never a URL
 };
 
 export type GdgSponsor = {
@@ -113,6 +116,8 @@ export type GdgTeamMember = {
   secondaryTitle: string; // "" once deduped against `title` and the badge
   photo: string | null;
   isOrganizer: boolean;
+  bioHtml: string; // sanitized; the team's source format is plain text (bio.ts)
+  twitter: string | null; // bare handle, never a URL
 };
 
 // Grouping wrappers for the two event-detail sections. `label` is the display

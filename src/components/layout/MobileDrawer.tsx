@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { SocialLinks } from "@/components/social/SocialLinks";
 import { InstallAppButton } from "@/components/pwa/InstallAppButton";
+import { useFocusTrap } from "@/lib/use-focus-trap";
 import { chapter } from "@/data/chapter";
 import { strings } from "@/lib/strings";
 
@@ -17,46 +18,16 @@ type Props = {
   navItems: NavItem[];
 };
 
-const FOCUSABLE_SELECTOR =
-  'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
 // Focus trap + Esc-to-close + focus-returns-to-trigger, per
 // Design-Philosophy.md §10 ("Full keyboard operability including the mobile
 // drawer"). G-2: Join stays outside this drawer, in the header bar.
+//
+// The trap itself lives in `useFocusTrap`, shared with the person detail
+// modal. Focus restore stays here-ish — `Header` owns it, via the `onClose` it
+// passes down.
 export function MobileDrawer({ open, onClose, navItems }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!open) return;
-
-    const panel = panelRef.current;
-    const focusable = panel?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-    focusable?.[0]?.focus();
-
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        onClose();
-        return;
-      }
-      if (e.key !== "Tab" || !panel) return;
-
-      const items = panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
-      if (items.length === 0) return;
-      const first = items[0];
-      const last = items[items.length - 1];
-
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [open, onClose]);
+  useFocusTrap(panelRef, open, onClose);
 
   if (!open) return null;
 

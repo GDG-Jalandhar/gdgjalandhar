@@ -2,6 +2,7 @@ import "server-only";
 import { CHAPTER_ID } from "./constants";
 import { parseAgenda } from "./agenda-parser";
 import { sanitizeEventHtml } from "./sanitize";
+import { toBioHtml } from "./bio";
 import { stripContactParagraphs } from "./chapter-description";
 import type {
   RawChapter,
@@ -187,6 +188,16 @@ export function normalizeChapter(raw: RawChapter): GdgChapter {
 // placeholder avatar in the middle of a speaker grid.
 const PLACEHOLDER_NAME = /^[-\s]*$/;
 
+// Bevy stores socials as bare handles ("AashiDutt", "aashi-dutt") — every value
+// measured across 159 people matched this exactly, no URLs and no "@". A value
+// that doesn't match would build a broken link, so it becomes null instead.
+const HANDLE = /^[A-Za-z0-9_.-]+$/;
+
+function handle(raw: string | null | undefined): string | null {
+  const value = raw?.trim().replace(/^@/, "") ?? "";
+  return value && HANDLE.test(value) ? value : null;
+}
+
 /**
  * Maps `event_person` rows to `GdgPerson`. Drops the placeholder rows above and
  * sorts by Bevy's own `order` field, which organizers set per role.
@@ -205,6 +216,9 @@ export function normalizeEventPeople(raw: RawEventPerson[]): GdgPerson[] {
       title: person.title?.trim() ?? "",
       company: person.company?.trim() ?? "",
       photo: person.picture?.thumbnail_url ?? person.picture?.url ?? null,
+      bioHtml: toBioHtml(person.bio),
+      twitter: handle(person.personal_twitter),
+      linkedin: handle(person.personal_linkedin_page),
     }))
     .filter((person) => !PLACEHOLDER_NAME.test(person.name));
 }
@@ -272,6 +286,8 @@ export function normalizeTeam(raw: RawTeamMember[]): GdgTeamMember[] {
       secondaryTitle,
       photo: member.user.cropped_avatar_url ?? member.user.avatar?.thumbnail_url ?? null,
       isOrganizer,
+      bioHtml: toBioHtml(member.user.bio),
+      twitter: handle(member.user.twitter),
     };
   });
 }
