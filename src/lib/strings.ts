@@ -64,13 +64,17 @@ export const strings = {
       organizer: "Organizer",
       partner: "Partner",
     },
-    sponsorTypeLabels: {
-      sponsor: "Sponsor",
-      global_sponsor: "Global sponsor",
-      local_sponsor: "Local sponsor",
-      media_partner: "Media partner",
-      partner: "Partner",
-    },
+    // One heading for every sponsor, whatever `sponsor_type` Bevy filed them
+    // under — that taxonomy is its own bookkeeping, not the reader's concern.
+    partnersEyebrow: "// PARTNERS",
+  },
+  people: {
+    viewProfile: "View profile",
+    close: "Close",
+    // `{name} on X` / `{name} on LinkedIn` — an icon link needs a real
+    // accessible name, never just the icon (Design-Philosophy.md §8).
+    onX: "on X",
+    onLinkedIn: "on LinkedIn",
   },
   about: {
     teamEyebrow: "// TEAM",

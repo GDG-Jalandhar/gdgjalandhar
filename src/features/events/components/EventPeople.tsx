@@ -37,6 +37,9 @@ export function EventPeople({ groups }: { groups: GdgPersonGroup[] }) {
                 // centered lines in a card this wide. Either half can be blank.
                 title={person.title}
                 secondaryTitle={person.company}
+                bioHtml={person.bioHtml}
+                twitter={person.twitter}
+                linkedin={person.linkedin}
               />
             ))}
           </PersonGrid>

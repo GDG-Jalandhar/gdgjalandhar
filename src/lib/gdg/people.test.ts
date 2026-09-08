@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchEventPeople, fetchEventSponsors } from "./client";
 import { normalizeEventPeople, normalizeEventSponsors } from "./normalize";
-import { groupPeopleByRole, groupSponsorsByType, roleLabel, sponsorTypeLabel } from "./format-people";
+import { groupPeopleByRole, linkedinUrl, roleLabel, twitterUrl } from "./format-people";
 import { eventPeople, eventSponsors, peopleEnvelope } from "@/mocks/fixtures/people";
 import type { RawEventPerson, RawEventSponsor } from "./schema";
 
@@ -127,15 +127,14 @@ describe("normalizeEventSponsors", () => {
   });
 });
 
-describe("role and sponsor-type labels", () => {
+describe("role labels", () => {
   it("maps the roles Bevy documents", () => {
     expect(roleLabel("speaker")).toBe("Speaker");
-    expect(sponsorTypeLabel("media_partner")).toBe("Media partner");
+    expect(roleLabel("judge")).toBe("Judge");
   });
 
   it("titleizes a slug nobody mapped, so a new Bevy role still renders", () => {
     expect(roleLabel("guest_emcee")).toBe("Guest Emcee");
-    expect(sponsorTypeLabel("community_partner")).toBe("Community Partner");
   });
 });
 
@@ -146,14 +145,34 @@ describe("grouping", () => {
     expect(groups[0].label).toBe("Speakers");
   });
 
-  it("groups sponsors by type", () => {
-    const groups = groupSponsorsByType(normalizeEventSponsors(sponsorRows as RawEventSponsor[]));
-    expect(groups.map((g) => g.label)).toEqual(["Local sponsors", "Media partners"]);
-    expect(groups.find((g) => g.type === "media_partner")?.sponsors).toHaveLength(2);
-  });
-
   it("returns no groups at all for an event with nobody, so no empty heading renders", () => {
     expect(groupPeopleByRole([])).toEqual([]);
-    expect(groupSponsorsByType([])).toEqual([]);
+  });
+});
+
+describe("social handles", () => {
+  it("builds URLs from the bare handles Bevy stores", () => {
+    expect(twitterUrl("AashiDutt")).toBe("https://x.com/AashiDutt");
+    expect(linkedinUrl("aashi-dutt")).toBe("https://www.linkedin.com/in/aashi-dutt");
+  });
+
+  it("tolerates a leading @, which the API doesn't send but a human might", () => {
+    expect(twitterUrl("@AashiDutt")).toBe("https://x.com/AashiDutt");
+  });
+
+  it("drops the link entirely rather than building a broken one", () => {
+    expect(twitterUrl("")).toBeNull();
+    expect(twitterUrl(null)).toBeNull();
+    expect(twitterUrl("https://twitter.com/someone")).toBeNull();
+    expect(linkedinUrl("in/someone/extra")).toBeNull();
+  });
+
+  it("normalizes handles off the wire and nulls the ones that aren't handles", () => {
+    const [ok, bad] = normalizeEventPeople([
+      { id: 1, first_name: "A", last_name: "B", role: "speaker", order: 0, picture: {}, personal_twitter: " @handle ", personal_linkedin_page: "a-b" },
+      { id: 2, first_name: "C", last_name: "D", role: "speaker", order: 1, picture: {}, personal_twitter: "http://x.com/c", personal_linkedin_page: "" },
+    ] as RawEventPerson[]);
+    expect(ok).toMatchObject({ twitter: "handle", linkedin: "a-b" });
+    expect(bad).toMatchObject({ twitter: null, linkedin: null });
   });
 });

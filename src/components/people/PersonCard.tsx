@@ -1,4 +1,5 @@
 import { PersonAvatar } from "./PersonAvatar";
+import { PersonDetails } from "./PersonDetails";
 
 type Props = {
   name: string;
@@ -9,6 +10,10 @@ type Props = {
   secondaryTitle?: string;
   /** One of the kit's three sanctioned badges. Don't invent a fourth tier. */
   badge?: "Organizer" | "Speaker" | "Member";
+  /** Sanitized upstream by `toBioHtml`; "" when the person has no bio. */
+  bioHtml?: string;
+  twitter?: string | null;
+  linkedin?: string | null;
 };
 
 /**
@@ -41,10 +46,22 @@ type Props = {
  * (#262626) the same value drops to 4.38:1 and fails AA. `text-text-muted`
  * holds 6.36:1 there. Hierarchy comes from order and the bold name instead.
  *
- * Bios, companies-as-links and social handles are all available in the API and
- * deliberately not rendered yet.
+ * The bio and social handles don't fit a card this size, so they live behind
+ * the "View profile" button at the bottom (`PersonDetails`). That button is
+ * absent when there's nothing behind it — 8 of 155 real people on this chapter
+ * have neither a bio nor a handle, and a control that opens an empty modal is
+ * worse than no control.
  */
-export function PersonCard({ name, photo, title, secondaryTitle, badge }: Props) {
+export function PersonCard({
+  name,
+  photo,
+  title,
+  secondaryTitle,
+  badge,
+  bioHtml = "",
+  twitter = null,
+  linkedin = null,
+}: Props) {
   return (
     <div className="flex h-full flex-col items-center gap-3 rounded-card border border-hairline bg-surface p-4 text-center">
       <PersonAvatar name={name} photo={photo} />
@@ -60,6 +77,21 @@ export function PersonCard({ name, photo, title, secondaryTitle, badge }: Props)
           <p className="font-mono text-meta leading-snug text-text-muted">{secondaryTitle}</p>
         )}
       </div>
+      {/* Predicate lives here, not alongside PersonDetails: that module is
+          `"use client"`, and a Server Component may render a client component
+          but never call a function exported from one. */}
+      {(bioHtml || twitter || linkedin) && (
+        <PersonDetails
+          name={name}
+          photo={photo}
+          title={title}
+          secondaryTitle={secondaryTitle}
+          badge={badge}
+          bioHtml={bioHtml}
+          twitter={twitter}
+          linkedin={linkedin}
+        />
+      )}
     </div>
   );
 }

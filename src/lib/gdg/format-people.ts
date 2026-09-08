@@ -1,19 +1,20 @@
 import { strings } from "@/lib/strings";
-import type { GdgPerson, GdgPersonGroup, GdgSponsor, GdgSponsorGroup } from "./types";
+import type { GdgPerson, GdgPersonGroup } from "./types";
 
 /**
- * Display helpers for `event_person` / `event_sponsor` data — kept out of
- * `normalize.ts` for the same reason `format-event.ts` is: normalization maps
- * the wire shape, presentation decides what a reader sees.
+ * Display helpers for `event_person` data — kept out of `normalize.ts` for the
+ * same reason `format-event.ts` is: normalization maps the wire shape,
+ * presentation decides what a reader sees.
  *
- * Both Bevy fields these operate on are OPEN vocabularies. Six `role` values
- * have been observed on this chapter and Bevy's own settings define more, so
- * nothing here may assume a closed set: an unrecognised slug is titleized and
- * shown, never dropped.
+ * `role` is an OPEN vocabulary. Six values have been observed on this chapter
+ * and Bevy's own settings define more, so nothing here may assume a closed set:
+ * an unrecognised slug is titleized and shown, never dropped.
+ *
+ * `sponsor_type` had the same treatment until partners were flattened into one
+ * list — see `EventSponsors`.
  */
 
 const roleLabels: Record<string, string> = strings.eventDetail.roleLabels;
-const sponsorTypeLabels: Record<string, string> = strings.eventDetail.sponsorTypeLabels;
 
 /** `"guest_emcee"` → `"Guest Emcee"`. The fallback for an unmapped slug. */
 function titleize(slug: string): string {
@@ -26,10 +27,6 @@ function titleize(slug: string): string {
 
 export function roleLabel(role: string): string {
   return roleLabels[role] ?? titleize(role);
-}
-
-export function sponsorTypeLabel(type: string): string {
-  return sponsorTypeLabels[type] ?? titleize(type);
 }
 
 // Reading order for the sections, most-prominent first. Every label in the
@@ -45,8 +42,6 @@ const ROLE_ORDER = [
   "organizer",
   "partner",
 ];
-
-const SPONSOR_TYPE_ORDER = ["global_sponsor", "sponsor", "local_sponsor", "partner", "media_partner"];
 
 /**
  * Orders group keys by an explicit precedence list, appending anything
@@ -82,16 +77,23 @@ export function groupPeopleByRole(people: GdgPerson[]): GdgPersonGroup[] {
   }));
 }
 
-/**
- * One group per sponsor type. The request sends `order_by=sponsor_type`, but
- * the grouping is redone here rather than trusted — the same stance `client.ts`
- * takes toward the server-side `order` param on the event lists.
- */
-export function groupSponsorsByType(sponsors: GdgSponsor[]): GdgSponsorGroup[] {
-  const groups = groupBy(sponsors, (sponsor) => sponsor.type);
-  return orderKeys([...groups.keys()], SPONSOR_TYPE_ORDER).map((type) => ({
-    type,
-    label: `${sponsorTypeLabel(type)}s`,
-    sponsors: groups.get(type) ?? [],
-  }));
+// Bevy stores socials as bare handles, so the URL is built here. `normalize.ts`
+// has already rejected anything that isn't a plain handle, but these stay
+// defensive: a bad value should drop the link, never render a broken one.
+const HANDLE = /^[A-Za-z0-9_.-]+$/;
+
+function cleanHandle(raw: string | null | undefined): string | null {
+  const value = raw?.trim().replace(/^@/, "") ?? "";
+  return value && HANDLE.test(value) ? value : null;
+}
+
+/** x.com, not twitter.com — it redirects, and the icon set already calls it `x`. */
+export function twitterUrl(raw: string | null | undefined): string | null {
+  const value = cleanHandle(raw);
+  return value && `https://x.com/${value}`;
+}
+
+export function linkedinUrl(raw: string | null | undefined): string | null {
+  const value = cleanHandle(raw);
+  return value && `https://www.linkedin.com/in/${value}`;
 }

@@ -19,6 +19,8 @@ export function TeamCard({ member }: { member: GdgTeamMember }) {
       title={member.title}
       secondaryTitle={member.secondaryTitle}
       badge={member.isOrganizer ? "Organizer" : undefined}
+      bioHtml={member.bioHtml}
+      twitter={member.twitter}
     />
   );
 }
