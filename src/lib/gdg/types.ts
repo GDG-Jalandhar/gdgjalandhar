@@ -120,7 +120,7 @@ export type GdgTeamMember = {
   twitter: string | null; // bare handle, never a URL
 };
 
-// Grouping wrappers for the two event-detail sections. `label` is the display
-// heading; `role`/`type` stay the raw slug so a group is still identifiable.
+// Grouping wrapper for the event-detail people sections. `label` is the display
+// heading; `role` stays the raw slug so a group is still identifiable.
+// Sponsors have no equivalent — they render as one flat "Partners" list.
 export type GdgPersonGroup = { role: string; label: string; people: GdgPerson[] };
-export type GdgSponsorGroup = { type: string; label: string; sponsors: GdgSponsor[] };

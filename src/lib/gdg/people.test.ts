@@ -1,14 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { fetchEventPeople, fetchEventSponsors } from "./client";
 import { normalizeEventPeople, normalizeEventSponsors } from "./normalize";
-import {
-  groupPeopleByRole,
-  groupSponsorsByType,
-  linkedinUrl,
-  roleLabel,
-  sponsorTypeLabel,
-  twitterUrl,
-} from "./format-people";
+import { groupPeopleByRole, linkedinUrl, roleLabel, twitterUrl } from "./format-people";
 import { eventPeople, eventSponsors, peopleEnvelope } from "@/mocks/fixtures/people";
 import type { RawEventPerson, RawEventSponsor } from "./schema";
 
@@ -134,15 +127,14 @@ describe("normalizeEventSponsors", () => {
   });
 });
 
-describe("role and sponsor-type labels", () => {
+describe("role labels", () => {
   it("maps the roles Bevy documents", () => {
     expect(roleLabel("speaker")).toBe("Speaker");
-    expect(sponsorTypeLabel("media_partner")).toBe("Media partner");
+    expect(roleLabel("judge")).toBe("Judge");
   });
 
   it("titleizes a slug nobody mapped, so a new Bevy role still renders", () => {
     expect(roleLabel("guest_emcee")).toBe("Guest Emcee");
-    expect(sponsorTypeLabel("community_partner")).toBe("Community Partner");
   });
 });
 
@@ -153,15 +145,8 @@ describe("grouping", () => {
     expect(groups[0].label).toBe("Speakers");
   });
 
-  it("groups sponsors by type", () => {
-    const groups = groupSponsorsByType(normalizeEventSponsors(sponsorRows as RawEventSponsor[]));
-    expect(groups.map((g) => g.label)).toEqual(["Local sponsors", "Media partners"]);
-    expect(groups.find((g) => g.type === "media_partner")?.sponsors).toHaveLength(2);
-  });
-
   it("returns no groups at all for an event with nobody, so no empty heading renders", () => {
     expect(groupPeopleByRole([])).toEqual([]);
-    expect(groupSponsorsByType([])).toEqual([]);
   });
 });
 

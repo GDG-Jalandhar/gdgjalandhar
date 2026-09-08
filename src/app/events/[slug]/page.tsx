@@ -18,7 +18,7 @@ import {
   fetchEventSponsors,
 } from "@/lib/gdg/client";
 import { formatEventDateTimeRange } from "@/lib/gdg/format-event";
-import { groupPeopleByRole, groupSponsorsByType } from "@/lib/gdg/format-people";
+import { groupPeopleByRole } from "@/lib/gdg/format-people";
 import { eventJsonLd } from "@/lib/seo/jsonld";
 
 type Props = {
@@ -103,7 +103,7 @@ export default async function EventDetailPage({ params }: Props) {
 
         <EventPeople groups={groupPeopleByRole(people)} />
 
-        <EventSponsors groups={groupSponsorsByType(sponsors)} />
+        <EventSponsors sponsors={sponsors} />
 
         {event.tags.length > 0 && (
           <div className="flex flex-wrap gap-2">
